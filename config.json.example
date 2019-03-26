@@ -1,0 +1,11 @@
+{
+    "returnURL": "https://example.com/authenticate",
+    "realm": "https://example.com",
+    "apiKey": "your steam webapi key",
+    "secret": "change me to something random",
+    "cookie": "scones",
+    "barter": "your barterid",
+    "port": 3939,
+    "mySteamID": "your steamid64",
+    "myName": "your name"
+}

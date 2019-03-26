@@ -1,0 +1,113 @@
+<html>
+
+<head>
+  <script src="//code.jquery.com/jquery-3.3.1.slim.js"></script>
+  <style type="text/css">
+    body {
+      font-family: 'Helvetica';
+    }
+
+    iframe {
+      width: 646;
+      height: 190;
+      border: 0;
+    }
+
+    table {
+      width: 100%;
+    }
+
+    td:first-child {
+      text-align: center;
+    }
+
+    tr.owned {
+      background-color: #b2ffb7;
+    }
+  </style>
+  <script>
+    var profile = "{{profile}}";
+    var tradeables = "{{tradeables}}";
+
+    var currentApp = -1;
+
+    var showAppTimeout;
+
+    function displayTradeables() {
+      $("tr[data-app]").off();
+
+      $("table").html("<th>AppID</th><th>Title</th>");
+
+      tradeables.forEach(function (i) {
+        var owned = (profile.loggedin && profile.profile.apps.indexOf(i.appid) > -1) ? " owned" : "";
+
+        $("table").append("<tr class='app" + owned + "' data-app='" + i.appid + "'><td>" + i.appid + "</td><td><a href='https://store.steampowered.com/app/" + i.appid + "' target='_blank'>" + i.title + "</a></td>");
+      });
+
+      $("tr[data-app]").on("mouseover", function (e) {
+        if (showAppTimeout) clearTimeout(showAppTimeout);
+
+        showAppTimeout = setTimeout(function () {
+          var app = $(e.currentTarget).data("app");
+
+          if (app != currentApp) {
+            $("#appinfo").html("<iframe src='https://store.steampowered.com/widget/" + app + "/'></iframe>");
+            currentApp = app;
+          }
+
+          $("#appinfo").css("display", "block");
+          $("#appinfo").css("position", "absolute");
+          $("#appinfo").css("left", e.pageX + 10);
+          $("#appinfo").css("top", e.pageY);
+        }, 500);
+      });
+
+      $("tr[data-app]").on("mouseout", function (e) {
+        if (showAppTimeout) clearTimeout(showAppTimeout);
+
+        $("#appinfo").css("display", "none");
+      });
+    }
+
+    function sortBy(key, reverse) {
+      if (reverse === undefined) reverse = false;
+
+      tradeables.sort(function (a, b) {
+        if (a[key] === undefined) return -1;
+        if (b[key] === undefined) return 1;
+
+        if (a[key] > b[key]) return 1;
+        else if (a[key] === b[key]) return 0;
+        else return -1;
+      });
+
+      if (reverse) tradeables.reverse();
+
+      displayTradeables();
+    }
+
+    $("document").ready(displayTradeables);
+
+    $("document").ready(function () {
+      if (!profile.loggedin) $("#loginlink").html(", and <b><a href='/authenticate'>log in</a></b> to show owned/unowned indicators while your game library is public")
+      else $("#loginlink").html("; <b><a href='/deauthenticate'>log out</a></b> to stop showing owned/unowned indicators");
+    });
+  </script>
+  <title>
+    {{myName}}'s Trade List
+  </title>
+</head>
+
+<body>
+  <h1>{{myName}}'s Trade List</h1>
+  <a href="#" onClick="sortBy('title');">Sort by title</a> &middot; <a href="#" onClick="sortBy('appid');">Sort by AppID</a> &middot; <a href="#" onClick="sortBy('wishlists', true);">Sort by relative value</a><br><br>
+  <b>Hover</b> for more app info<span id="loginlink"></span>. Compare your trade list with my library using <a href="http://www.nerdchan.net/steamcompare?steamid={{mySteamID}}" target="_blank">Steam Compare</a>.<br><br>
+  <table border=1>
+  </table>
+
+  <div id="appinfo">
+
+  </div>
+</body>
+
+</html>
